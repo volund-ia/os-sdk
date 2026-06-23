@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Checkout do volund-os (fonte do contrato) como repo irmão, p/ o drift-guard.
+      # Requer o secret VOLUND_OS_TOKEN se o repo for privado. Sem ele, o guard
+      # apenas avisa e passa (ver scripts/check-protocol-drift.mjs).
+      - name: Checkout volund-os (contrato)
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: volund-ia/volund-os
+          token: ${{ secrets.VOLUND_OS_TOKEN }}
+          path: ../volund-os
+          sparse-checkout: lib/agent/connectors/api/events.ts
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - run: npm ci
+      - run: npm run check:protocol
+        env:
+          VOLUND_OS_DIR: ${{ github.workspace }}/../volund-os
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

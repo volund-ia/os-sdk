@@ -1,0 +1,9 @@
+schema: spec-driven
+
+# Contexto do projeto (mostrado à IA ao criar artefatos).
+context: |
+  Pacote: @volund/sdk — cliente TypeScript do Volund OS (Parte B).
+  Stack: TypeScript 5, ESM-first, build com tsdown (ESM+CJS+.d.ts), testes com vitest.
+  Cliente HTTP fino: POST nas rotas /stream, lê SSE, entrega AsyncIterable<VolundEvent>.
+  Contrato VolundEvent é VENDORADO de volund-os (src/protocol/events.ts) — fonte única.
+  Conventional commits. snake_case no wire; camelCase só na ergonomia do SDK.

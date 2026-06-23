@@ -1,0 +1,50 @@
+/**
+ * `VolundOS` — ponto de entrada do SDK. Configuração mínima: uma API key.
+ *
+ *   const volund = new VolundOS({ apiKey: process.env.VOLUND_API_KEY! });
+ *   const run = await volund.agents.run({ agentId, input });
+ */
+
+import { Agents } from "./agents";
+import { VolundError } from "./errors";
+import type { HttpConfig } from "./http";
+
+/** Endpoint de produção do Volund OS (decisão de proposta §6). */
+const DEFAULT_BASE_URL = "https://os.volund.com.br";
+
+export interface VolundOSConfig {
+  /** Chave de API "vos_live_...". Obrigatória. */
+  apiKey: string;
+  /** Sobrescreve a URL base (staging/local). Default: produção. */
+  baseUrl?: string;
+  /** Injeta um `fetch` (testes ou runtimes sem fetch global). */
+  fetch?: typeof fetch;
+}
+
+export class VolundOS {
+  /** Disparo e continuação de runs de agente. */
+  readonly agents: Agents;
+
+  constructor(config: VolundOSConfig) {
+    if (!config?.apiKey || typeof config.apiKey !== "string") {
+      throw new VolundError("apiKey é obrigatória.", { code: "missing_api_key" });
+    }
+
+    const fetchImpl = config.fetch ?? globalThis.fetch;
+    if (typeof fetchImpl !== "function") {
+      throw new VolundError(
+        "fetch global indisponível. Use Node ≥18 ou injete `fetch` no config.",
+        { code: "unsupported" }
+      );
+    }
+
+    const http: HttpConfig = {
+      apiKey: config.apiKey,
+      baseUrl: config.baseUrl ?? DEFAULT_BASE_URL,
+      // Liga o `fetch` ao globalThis p/ não perder o `this` em algumas impls.
+      fetch: (...args) => fetchImpl(...args),
+    };
+
+    this.agents = new Agents(http);
+  }
+}

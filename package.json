@@ -1,0 +1,58 @@
+{
+  "name": "@volund/sdk",
+  "version": "0.1.0",
+  "description": "Cliente TypeScript para rodar agentes do Volund OS com streaming em tempo real.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "sync:protocol": "node scripts/sync-protocol.mjs",
+    "check:protocol": "node scripts/check-protocol-drift.mjs",
+    "prepublishOnly": "npm run check:protocol && npm run typecheck && npm run test && npm run build"
+  },
+  "keywords": [
+    "volund",
+    "agents",
+    "sdk",
+    "streaming",
+    "sse",
+    "ai"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "eventsource-parser": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsdown": "^0.22.3",
+    "typescript": "^5.5.0",
+    "unrun": "^0.3.1",
+    "vitest": "^2.0.0"
+  }
+}
