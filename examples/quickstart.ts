@@ -13,7 +13,14 @@ async function main() {
   }
 
   const baseUrl = process.env.VOLUND_BASE_URL; // opcional (default: produção)
-  const volund = new VolundOS({ apiKey, ...(baseUrl ? { baseUrl } : {}) });
+  // Para testar contra um preview da Vercel com Deployment Protection ligada:
+  // VERCEL_BYPASS=<secret do Protection Bypass for Automation>
+  const bypass = process.env.VERCEL_BYPASS;
+  const volund = new VolundOS({
+    apiKey,
+    ...(baseUrl ? { baseUrl } : {}),
+    ...(bypass ? { defaultHeaders: { "x-vercel-protection-bypass": bypass } } : {}),
+  });
 
   const run = await volund.agents.run({
     agentId,

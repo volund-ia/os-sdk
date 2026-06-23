@@ -84,6 +84,43 @@ Todos herdam de `VolundError` (tem `.code` e `.status`). Roteie por `instanceof`
 - `execution: "local"` (rodar no `cwd` do dev, estilo Cursor) chega na **V2**; o
   tipo já existe, mas a V1 só roda na nuvem.
 
+## Testar contra um preview da Vercel (modo intermediário)
+
+Antes do endpoint de produção, dá pra apontar o SDK pro deployment de preview do
+PR:
+
+```bash
+VOLUND_API_KEY=vos_live_... \
+VOLUND_AGENT_ID=agt_... \
+VOLUND_BASE_URL=https://seu-preview.vercel.app \
+npm run example
+```
+
+Se o preview estiver com **Deployment Protection** ligada, passe o token de
+*Protection Bypass for Automation* — ele vira um header via `defaultHeaders`:
+
+```bash
+VERCEL_BYPASS=<secret> ...demais envs... npm run example
+```
+
+```ts
+new VolundOS({
+  apiKey,
+  baseUrl: "https://seu-preview.vercel.app",
+  defaultHeaders: { "x-vercel-protection-bypass": process.env.VERCEL_BYPASS! },
+});
+```
+
+## Instalar antes da publicação no NPM (beta)
+
+Enquanto `@volund/sdk` não está publicado:
+
+```bash
+npm install anaraque-l/volund-sdk   # do GitHub (builda no install via `prepare`)
+# ou um tarball:
+npm pack && npm install ./volund-sdk-0.1.0.tgz
+```
+
 ## Desenvolvimento
 
 ```bash

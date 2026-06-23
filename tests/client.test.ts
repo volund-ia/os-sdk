@@ -137,6 +137,22 @@ describe("agents.run", () => {
     expect(calls[0]!.url).toBe("https://os.volund.com.br/api/v1/agents/a/stream");
   });
 
+  it("envia defaultHeaders sem deixar sobrescrever os obrigatórios", async () => {
+    const { fetch, calls } = mockFetch(() => sseResponse(RUN_WIRE));
+    const volund = new VolundOS({
+      apiKey: "k",
+      fetch,
+      defaultHeaders: {
+        "x-vercel-protection-bypass": "secret",
+        Authorization: "Bearer HACK", // tentativa de override — deve ser ignorada
+      },
+    });
+    await volund.agents.run({ agentId: "a", input: "x" });
+    const headers = calls[0]!.init.headers as Record<string, string>;
+    expect(headers["x-vercel-protection-bypass"]).toBe("secret");
+    expect(headers.Authorization).toBe("Bearer k"); // obrigatório venceu
+  });
+
   it("rejeita execution local (V1)", async () => {
     const { fetch } = mockFetch(() => sseResponse(RUN_WIRE));
     const volund = new VolundOS({ apiKey: "k", fetch });

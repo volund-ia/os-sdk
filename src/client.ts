@@ -19,6 +19,14 @@ export interface VolundOSConfig {
   baseUrl?: string;
   /** Injeta um `fetch` (testes ou runtimes sem fetch global). */
   fetch?: typeof fetch;
+  /**
+   * Headers extra em toda requisição. Útil p/ o Protection Bypass da Vercel ao
+   * testar contra um preview deployment:
+   * `{ "x-vercel-protection-bypass": process.env.VERCEL_BYPASS! }`.
+   * Os headers obrigatórios (Authorization/Content-Type/Accept) não podem ser
+   * sobrescritos.
+   */
+  defaultHeaders?: Record<string, string>;
 }
 
 export class VolundOS {
@@ -43,6 +51,7 @@ export class VolundOS {
       baseUrl: config.baseUrl ?? DEFAULT_BASE_URL,
       // Liga o `fetch` ao globalThis p/ não perder o `this` em algumas impls.
       fetch: (...args) => fetchImpl(...args),
+      ...(config.defaultHeaders ? { defaultHeaders: config.defaultHeaders } : {}),
     };
 
     this.agents = new Agents(http);

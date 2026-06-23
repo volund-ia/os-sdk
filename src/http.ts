@@ -15,6 +15,8 @@ export interface HttpConfig {
   apiKey: string;
   baseUrl: string;
   fetch: typeof fetch;
+  /** Headers extra em toda requisição (ex.: bypass de proteção da Vercel). */
+  defaultHeaders?: Record<string, string>;
 }
 
 export interface StreamRequestBody {
@@ -39,6 +41,9 @@ export async function postStream(
     res = await cfg.fetch(url, {
       method: "POST",
       headers: {
+        // defaultHeaders primeiro: os obrigatórios sempre vencem (não dá p/
+        // quebrar auth/streaming por engano), mas extras como bypass passam.
+        ...cfg.defaultHeaders,
         Authorization: `Bearer ${cfg.apiKey}`,
         "Content-Type": "application/json",
         Accept: "text/event-stream",

@@ -34,6 +34,8 @@
     "test:watch": "vitest",
     "sync:protocol": "node scripts/sync-protocol.mjs",
     "check:protocol": "node scripts/check-protocol-drift.mjs",
+    "example": "tsx examples/quickstart.ts",
+    "prepare": "tsdown",
     "prepublishOnly": "npm run check:protocol && npm run typecheck && npm run test && npm run build"
   },
   "keywords": [
@@ -51,6 +53,7 @@
   "devDependencies": {
     "@types/node": "^20.14.0",
     "tsdown": "^0.22.3",
+    "tsx": "^4.16.0",
     "typescript": "^5.5.0",
     "unrun": "^0.3.1",
     "vitest": "^2.0.0"
