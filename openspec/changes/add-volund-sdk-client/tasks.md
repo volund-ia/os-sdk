@@ -29,8 +29,9 @@ concluir. NÃO commitar até `typecheck` + `test` + `build` passarem.
 - [x] 4.2 `src/agents.ts` — `run()/continue()`, AbortController, gancho execution.
 - [x] 4.3 `src/client.ts` — `VolundOS` (validação de apiKey, baseUrl, fetch).
 - [x] 4.4 `src/index.ts` — superfície pública (cliente + erros + tipos).
-- [ ] 4.5 Testes do cliente com `fetch` injetado devolvendo um SSE gravado
-        (run novo, continue, mapeamento de erro, cancel via AbortController).
+- [x] 4.5 Testes do cliente com `fetch` injetado devolvendo um SSE gravado
+        (run novo, continue, result, erros 401/403/404/409, content-type errado,
+        cancel via AbortController, consumo único, execution local). 17 testes.
 
 ## 5. Empacotamento e publicação (§5 passo 7)
 - [x] 5.1 `npm run build` (tsdown) gera `dist/` ESM+CJS+`.d.ts` sem erro.
