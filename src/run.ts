@@ -19,17 +19,25 @@ export interface RunResult {
 }
 
 export class Run {
-  /** `run_id` (== `thread_id` no Volund OS). Use em `agents.continue`. */
-  readonly id: string;
-
+  #id: string;
   #response: Response;
   #abort: AbortController;
   #consumed = false;
 
   constructor(response: Response, id: string, abort: AbortController) {
     this.#response = response;
-    this.id = id;
+    this.#id = id;
     this.#abort = abort;
+  }
+
+  /**
+   * `run_id` (== `thread_id` no Volund OS). Use em `agents.continue`.
+   * Para um run NOVO, só fica disponível depois que o primeiro evento
+   * (`run_started`) é consumido via `stream()`/`result()` — antes disso é "".
+   * Em `agents.continue`, já vem preenchido (você passou o `runId`).
+   */
+  get id(): string {
+    return this.#id;
   }
 
   /**
@@ -50,7 +58,11 @@ export class Run {
         code: "stream_error",
       });
     }
-    yield* parseVolundSSE(body);
+    for await (const event of parseVolundSSE(body)) {
+      // Para run novo, o id real chega aqui (run_started). Backfill barato.
+      if (event.type === "run_started" && event.run_id) this.#id = event.run_id;
+      yield event;
+    }
   }
 
   /**

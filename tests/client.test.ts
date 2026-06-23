@@ -130,6 +130,16 @@ describe("agents.run", () => {
     ]);
   });
 
+  it("preenche run.id a partir do run_started (run novo)", async () => {
+    const { fetch } = mockFetch(() => sseResponse(RUN_WIRE));
+    const volund = new VolundOS({ apiKey: "k", fetch });
+    const run = await volund.agents.run({ agentId: "a", input: "x" });
+
+    expect(run.id).toBe(""); // ainda não consumido
+    await run.result();
+    expect(run.id).toBe("t_1"); // backfill via run_started
+  });
+
   it("usa a baseUrl default quando não informada", async () => {
     const { fetch, calls } = mockFetch(() => sseResponse(RUN_WIRE));
     const volund = new VolundOS({ apiKey: "k", fetch });

@@ -78,10 +78,10 @@ export class Agents {
 }
 
 /**
- * O `run_id` chega no primeiro evento (`run_started`), mas o `Run` precisa de um
- * id antes de consumir o stream. Para o disparo novo, o servidor também ecoa o
- * id no header `x-volund-run-id`. Se ausente, cai para "" e o id real aparece no
- * primeiro `run_started` consumido via `stream()`.
+ * Para um run NOVO o `run_id` só existe no primeiro evento (`run_started`) — o
+ * servidor não o devolve em header. Então iniciamos o `Run` com "" e ele faz o
+ * backfill do id ao consumir o `run_started` (ver `Run.stream`). Mantemos um
+ * fast-path opcional por header caso o servidor passe a ecoá-lo no futuro.
  */
 function runIdFromResponse(res: Response): string {
   return res.headers.get("x-volund-run-id") ?? "";
