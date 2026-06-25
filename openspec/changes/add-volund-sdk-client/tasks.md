@@ -41,13 +41,24 @@ concluir. NÃO commitar até `typecheck` + `test` + `build` passarem.
 - [x] 5.1 `npm run build` (tsdown) gera `dist/` ESM+CJS+`.d.ts` sem erro.
 - [x] 5.2 `npm run typecheck` limpo.
 - [x] 5.3 Smoke de consumo: importar de `dist` em projeto ESM e CJS (13 exports
-        resolvem nos dois); `tsc --noEmit` limpo; `npm pack`/`npm link` OK.
-- [ ] 5.4 CI verde (`.github/workflows/ci.yml`): check:protocol, typecheck, test, build.
+        resolvem nos dois); `tsc --noEmit` limpo; `npm pack`/`npm link` OK; tarball
+        instalado em projeto limpo com tipos ok sob `moduleResolution: nodenext`.
+- [x] 5.4 CI verde (`.github/workflows/ci.yml`): check:protocol, typecheck, test, build.
+        (✓ PR #2, job `build-test` verde.)
 - [ ] 5.5 Publicar `@volund/sdk@0.2.0` (beta) — `npm publish --access public`.
 
 ## 6. Dogfooding (§5 passo 8)
-- [ ] 6.1 Rodar `examples/quickstart.ts` contra um agente real de staging.
+- [x] 6.1 Rodar contra agente real (`agt` UUID `6cb25420-…`, preview SSE da Vercel
+        sobre o banco de produção). Validados ao vivo: `run` (quickstart), `continue`
+        multi-turn com memória de thread (`examples/multiturn.ts`), `run.result()`
+        (`examples/edge-result.ts`), `run.cancel()` → AbortError (`examples/edge-cancel.ts`).
 - [ ] 6.2 Ajustar a DX com base na dor sentida; abrir issues p/ a V2 se houver.
+  - [ ] 6.2.1 **[backend, não-SDK] `run_busy` não é emitido.** A API do volund-os NÃO
+          sinaliza 409 quando se dispara `continue` numa thread com run ativo — ela
+          aceita o run concorrente (ver `examples/edge-busy.ts`). O mapeamento
+          409→`VolundRunBusyError` do SDK está correto e coberto por unit test; falta o
+          servidor mandar o 409. Ação: abrir issue no volund-os para enforçar a trava
+          de thread ocupada (ou documentar que runs são enfileirados).
 
 ## 7. Validação OpenSpec
 - [ ] 7.1 `openspec validate add-volund-sdk-client`.
