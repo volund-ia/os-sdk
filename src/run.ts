@@ -43,6 +43,12 @@ export class Run {
   /**
    * Itera os `VolundEvent` conforme chegam. ⚠️ Consumível UMA vez (é um stream
    * de rede) — não chame `stream()` e `result()` no mesmo `Run`.
+   *
+   * Se você ABANDONAR o stream no meio (um `break`/`throw` antes de um evento
+   * terminal), a conexão é fechada automaticamente — o servidor mata o sandbox e
+   * não vaza recurso (§3.6/§4.2 da proposta). Já em `run_finished`/`awaiting_input`
+   * o servidor encerra sozinho, então NÃO abortamos (abortar no `awaiting_input`
+   * mataria um run parqueado p/ vault e quebraria o resume — §3.5).
    */
   async *stream(): AsyncIterable<VolundEvent> {
     if (this.#consumed) {
@@ -58,10 +64,27 @@ export class Run {
         code: "stream_error",
       });
     }
-    for await (const event of parseVolundSSE(body)) {
-      // Para run novo, o id real chega aqui (run_started). Backfill barato.
-      if (event.type === "run_started" && event.run_id) this.#id = event.run_id;
-      yield event;
+
+    // O servidor já está encerrando por conta própria? (terminal ou parqueado)
+    let serverClosing = false;
+    try {
+      for await (const event of parseVolundSSE(body)) {
+        // Para run novo, o id real chega aqui (run_started). Backfill barato.
+        if (event.type === "run_started" && event.run_id) this.#id = event.run_id;
+        if (event.type === "run_finished" || event.type === "awaiting_input") {
+          serverClosing = true;
+        }
+        yield event;
+      }
+    } catch (err) {
+      // Se o abort foi nosso (run.cancel()), encerra gracioso em vez de propagar
+      // o AbortError do fetch para o consumidor.
+      if (this.#abort.signal.aborted) return;
+      throw err;
+    } finally {
+      // Consumidor abandonou no meio (sem evento terminal): fecha a conexão p/ o
+      // servidor matar o sandbox. Em estado terminal/parqueado, não tocamos.
+      if (!serverClosing) this.#abort.abort();
     }
   }
 
