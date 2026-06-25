@@ -1,8 +1,8 @@
 /**
- * @volund/sdk — cliente TypeScript para rodar agentes do Volund OS e receber,
+ * @volund-ia/sdk — cliente TypeScript para rodar agentes do Volund OS e receber,
  * em tempo real (streaming), tudo que o agente faz.
  *
- *   import { VolundOS } from "@volund/sdk";
+ *   import { VolundOS } from "@volund-ia/sdk";
  *   const volund = new VolundOS({ apiKey: process.env.VOLUND_API_KEY! });
  *   const run = await volund.agents.run({ agentId: "agt_123", input: "..." });
  *   for await (const ev of run.stream()) {

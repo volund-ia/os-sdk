@@ -45,7 +45,7 @@ concluir. NÃO commitar até `typecheck` + `test` + `build` passarem.
         instalado em projeto limpo com tipos ok sob `moduleResolution: nodenext`.
 - [x] 5.4 CI verde (`.github/workflows/ci.yml`): check:protocol, typecheck, test, build.
         (✓ PR #2, job `build-test` verde.)
-- [ ] 5.5 Publicar `@volund/sdk@0.2.0` (beta) — `npm publish --access public`.
+- [ ] 5.5 Publicar `@volund-ia/sdk@0.2.0` (beta) — `npm publish --access public`.
 
 ## 6. Dogfooding (§5 passo 8)
 - [x] 6.1 Rodar contra agente real (`agt` UUID `6cb25420-…`, preview SSE da Vercel

@@ -1,6 +1,6 @@
 name: Release
 
-# Publica @volund/sdk no NPM quando uma tag `vX.Y.Z` é empurrada.
+# Publica @volund-ia/sdk no NPM quando uma tag `vX.Y.Z` é empurrada.
 #
 # Pré-requisito (uma vez): adicionar o secret `NPM_TOKEN` no repositório
 #   Settings → Secrets and variables → Actions → New repository secret

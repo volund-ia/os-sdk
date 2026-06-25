@@ -1,11 +1,11 @@
-# @volund/sdk
+# @volund-ia/sdk
 
 Cliente TypeScript para rodar agentes do **Volund OS** pelo seu próprio código e
 receber, em tempo real (streaming), tudo que o agente faz — raciocínio, chamadas
 de ferramenta e a resposta token a token.
 
 ```bash
-npm install @volund/sdk
+npm install @volund-ia/sdk
 ```
 
 > Requer Node ≥ 18 (usa o `fetch` nativo). Funciona também em Deno, Bun, Workers
@@ -14,7 +14,7 @@ npm install @volund/sdk
 ## Quickstart
 
 ```ts
-import { VolundOS } from "@volund/sdk";
+import { VolundOS } from "@volund-ia/sdk";
 
 const volund = new VolundOS({ apiKey: process.env.VOLUND_API_KEY! });
 
@@ -113,7 +113,7 @@ new VolundOS({
 
 ## Instalar antes da publicação no NPM (beta)
 
-Enquanto `@volund/sdk` não está publicado:
+Enquanto `@volund-ia/sdk` não está publicado:
 
 ```bash
 npm install anaraque-l/volund-sdk   # do GitHub (builda no install via `prepare`)

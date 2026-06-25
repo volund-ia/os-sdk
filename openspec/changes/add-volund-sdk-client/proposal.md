@@ -1,6 +1,6 @@
 # Change: add-volund-sdk-client
 
-> Parte B do projeto `@volund/sdk`. Consome o endpoint de streaming criado na
+> Parte B do projeto `@volund-ia/sdk`. Consome o endpoint de streaming criado na
 > Parte A (`volund-os`, rotas `POST /api/v1/agents/{id}/stream` e
 > `/runs/{id}/stream`, contrato `VolundEvent` v1).
 
@@ -14,7 +14,7 @@ espelhando o Cursor SDK, escondendo o transporte.
 
 ## What Changes
 
-- **Novo pacote `@volund/sdk`** — cliente HTTP fino: `new VolundOS()` →
+- **Novo pacote `@volund-ia/sdk`** — cliente HTTP fino: `new VolundOS()` →
   `agents.run()/continue()` → `Run` com `.stream()` (AsyncIterable<VolundEvent>),
   `.result()` (texto final) e `.cancel()`.
 - **Parser SSE robusto** sobre `eventsource-parser` — ignora heartbeat, lida com
@@ -25,7 +25,7 @@ espelhando o Cursor SDK, escondendo o transporte.
 - **Contrato vendorado** — `src/protocol/events.ts` é cópia fiel do `volund-os`,
   com drift-guard em CI (`scripts/check-protocol-drift.mjs`).
 - **Empacotamento** — `tsdown` gera ESM + CJS + `.d.ts`; zero deps além de
-  `eventsource-parser`; publicação `@volund/sdk@0.1.0` (beta).
+  `eventsource-parser`; publicação `@volund-ia/sdk@0.1.0` (beta).
 
 ## Impact
 

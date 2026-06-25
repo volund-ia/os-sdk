@@ -1,7 +1,7 @@
-# Projeto: @volund/sdk — convenções OpenSpec
+# Projeto: @volund-ia/sdk — convenções OpenSpec
 
 Spec-driven development para o pacote cliente do Volund OS (Parte B do plano
-`@volund/sdk`). A Parte A (servidor, rotas `/stream` + contrato `VolundEvent`)
+`@volund-ia/sdk`). A Parte A (servidor, rotas `/stream` + contrato `VolundEvent`)
 já está implementada no repo `volund-os`.
 
 - **Mudanças** ficam em `openspec/changes/<id>/` com `proposal.md`, `design.md`,
