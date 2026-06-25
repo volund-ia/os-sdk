@@ -16,13 +16,17 @@ concluir. NÃO commitar até `typecheck` + `test` + `build` passarem.
 - [x] 2.1 `src/sse.ts` — `parseVolundSSE` sobre `EventSourceParserStream`.
 - [x] 2.2 Testes: sequência completa, heartbeat, frame partido, byte-a-byte,
         tipo desconhecido, JSON malformado, `awaiting_input`.
-- [ ] 2.3 (Opcional) importar fixtures gravadas do `sse-adapter.test.ts` do
-        `volund-os` para teste de paridade ponta-a-ponta.
+- [x] 2.3 (Opcional) importar fixtures gravadas do `sse-adapter.test.ts` do
+        `volund-os` para teste de paridade ponta-a-ponta. (`tests/parity.test.ts`
+        + `tests/fixtures/weather-run.events.json`; wire serializado como o
+        transporte do servidor, 3 testes.)
 
 ## 3. Erros e transporte (§3 — armadilha de erro pré-stream)
 - [x] 3.1 `src/errors.ts` — hierarquia `VolundError` + `errorFromApiResponse`.
 - [x] 3.2 `src/http.ts` — `postStream` distingue stream de erro por content-type.
-- [ ] 3.3 Testes de `errorFromApiResponse` (401/403/404/409/5xx → subclasse).
+- [x] 3.3 Testes de `errorFromApiResponse` (401/403/404/409/5xx → subclasse).
+        (`tests/errors.test.ts`, 10 testes.) + timeout/retry no `src/http.ts`
+        (`timeoutMs`/`maxRetries` em `VolundOSConfig`; `tests/http.test.ts`, 9 testes).
 
 ## 4. Cliente (§5 passo 6)
 - [x] 4.1 `src/run.ts` — `Run.stream()/result()/cancel()` (consumo único, abort).
@@ -36,9 +40,10 @@ concluir. NÃO commitar até `typecheck` + `test` + `build` passarem.
 ## 5. Empacotamento e publicação (§5 passo 7)
 - [x] 5.1 `npm run build` (tsdown) gera `dist/` ESM+CJS+`.d.ts` sem erro.
 - [x] 5.2 `npm run typecheck` limpo.
-- [ ] 5.3 Smoke de consumo: importar de `dist` em projeto ESM e CJS; `tsc --noEmit`.
+- [x] 5.3 Smoke de consumo: importar de `dist` em projeto ESM e CJS (13 exports
+        resolvem nos dois); `tsc --noEmit` limpo; `npm pack`/`npm link` OK.
 - [ ] 5.4 CI verde (`.github/workflows/ci.yml`): check:protocol, typecheck, test, build.
-- [ ] 5.5 Publicar `@volund/sdk@0.1.0` (beta) — `npm publish --access public`.
+- [ ] 5.5 Publicar `@volund/sdk@0.2.0` (beta) — `npm publish --access public`.
 
 ## 6. Dogfooding (§5 passo 8)
 - [ ] 6.1 Rodar `examples/quickstart.ts` contra um agente real de staging.

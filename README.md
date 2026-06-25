@@ -118,7 +118,7 @@ Enquanto `@volund/sdk` não está publicado:
 ```bash
 npm install anaraque-l/volund-sdk   # do GitHub (builda no install via `prepare`)
 # ou um tarball:
-npm pack && npm install ./volund-sdk-0.1.0.tgz
+npm pack && npm install ./volund-sdk-0.2.0.tgz
 ```
 
 ## Desenvolvimento

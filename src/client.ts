@@ -27,6 +27,17 @@ export interface VolundOSConfig {
    * sobrescritos.
    */
   defaultHeaders?: Record<string, string>;
+  /**
+   * Timeout (ms) p/ RECEBER a resposta (headers). NÃO limita a duração do stream
+   * — um run pode durar minutos. Default: 60000. Use 0 para desligar.
+   */
+  timeoutMs?: number;
+  /**
+   * Tentativas extras em erro de rede/5xx (só na fase pré-stream). Default: 2.
+   * Use 0 para desligar. ⚠️ `run`/`continue` não são idempotentes — um 5xx pode
+   * ter criado o run mesmo assim; baixe para 0 se a duplicidade for inaceitável.
+   */
+  maxRetries?: number;
 }
 
 export class VolundOS {
@@ -52,6 +63,8 @@ export class VolundOS {
       // Liga o `fetch` ao globalThis p/ não perder o `this` em algumas impls.
       fetch: (...args) => fetchImpl(...args),
       ...(config.defaultHeaders ? { defaultHeaders: config.defaultHeaders } : {}),
+      ...(config.timeoutMs !== undefined ? { timeoutMs: config.timeoutMs } : {}),
+      ...(config.maxRetries !== undefined ? { maxRetries: config.maxRetries } : {}),
     };
 
     this.agents = new Agents(http);

@@ -258,6 +258,34 @@ describe("run.cancel()", () => {
   });
 });
 
+// --- fiação de timeout/retry (config pública → transporte) ---------------
+
+describe("VolundOS timeout/retry", () => {
+  it("propaga timeoutMs: aborta com code 'timeout' se a resposta não chega", async () => {
+    const fetchImpl = (async (_u: string | URL | Request, init?: RequestInit) =>
+      new Promise<Response>((_res, rej) => {
+        init?.signal?.addEventListener("abort", () => rej(new DOMException("aborted", "AbortError")));
+      })) as typeof fetch;
+    const volund = new VolundOS({ apiKey: "k", fetch: fetchImpl, timeoutMs: 20, maxRetries: 0 });
+    await expect(volund.agents.run({ agentId: "a", input: "x" })).rejects.toMatchObject({
+      code: "timeout",
+    });
+  });
+
+  it("propaga maxRetries: repete em 5xx e sucede", async () => {
+    let n = 0;
+    const fetchImpl = (async () => {
+      n++;
+      if (n < 2) return new Response(JSON.stringify({ error: "internal_error" }), { status: 500, headers: { "content-type": "application/json" } });
+      return sseResponse(RUN_WIRE);
+    }) as typeof fetch;
+    const volund = new VolundOS({ apiKey: "k", fetch: fetchImpl, maxRetries: 1 });
+    const run = await volund.agents.run({ agentId: "a", input: "x" });
+    await expect(run.result()).resolves.toMatchObject({ output: "Oi mundo" });
+    expect(n).toBe(2);
+  });
+});
+
 // --- mapeamento de erros -------------------------------------------------
 
 describe("mapeamento de erros pré-stream", () => {

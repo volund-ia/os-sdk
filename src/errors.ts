@@ -11,6 +11,7 @@ import type { VolundErrorCode } from "./protocol/events";
 /** Códigos locais do SDK que não vêm do servidor. */
 export type VolundClientErrorCode =
   | "network_error" // falha de transporte (fetch rejeitou, DNS, offline)
+  | "timeout" // resposta não chegou dentro de timeoutMs (fase pré-stream)
   | "stream_error" // corpo SSE ausente/ilegível, ou stream consumido 2x
   | "run_failed" // run_finished status:"failed"
   | "awaiting_input" // run pausou p/ HITL (vault) — ver AwaitingInputError

@@ -1,0 +1,10 @@
+[
+  { "type": "run_started", "protocol": "v1", "run_id": "run_42", "agent_id": "agent_7" },
+  { "type": "thinking_delta", "delta": "Vou checar " },
+  { "type": "thinking_delta", "delta": "o clima." },
+  { "type": "assistant_text_delta", "delta": "Deixa eu " },
+  { "type": "assistant_text_delta", "delta": "ver." },
+  { "type": "tool_call", "tool_call_id": "tool_1", "tool_name": "get_weather", "input": { "city": "Rio" } },
+  { "type": "tool_result", "tool_call_id": "tool_1", "output": "23°C, ensolarado" },
+  { "type": "run_finished", "status": "completed", "output": "Está 23°C e ensolarado no Rio.", "usage": { "input_tokens": 1200, "output_tokens": 45 } }
+]
