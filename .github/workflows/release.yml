@@ -1,0 +1,38 @@
+name: Release
+
+# Publica @volund/sdk no NPM quando uma tag `vX.Y.Z` é empurrada.
+#
+# Pré-requisito (uma vez): adicionar o secret `NPM_TOKEN` no repositório
+#   Settings → Secrets and variables → Actions → New repository secret
+# Use um **Automation token** do npm (npmjs.com → Access Tokens → Generate →
+# "Automation"). Esse tipo de token NÃO pede 2FA/OTP, então a publicação roda
+# sem interação. O usuário do token precisa ser membro da org @volund.
+#
+# Fluxo: bump da versão no package.json → tag `vX.Y.Z` → push da tag → publica.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
+
+      - run: npm ci
+
+      # `npm publish` dispara os lifecycle scripts do package.json:
+      #   prepare       → tsdown (build)
+      #   prepublishOnly → check:protocol + typecheck + test + build
+      # publishConfig.access=public cuida do pacote com escopo (@volund).
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
