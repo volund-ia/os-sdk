@@ -1,7 +1,9 @@
 /**
  * Dogfooding ponta-a-ponta (§5 passo 8 do plano). Rode contra um agente real:
  *
- *   VOLUND_API_KEY=vos_live_... VOLUND_AGENT_ID=agt_... npx tsx examples/quickstart.ts
+ *   VOLUND_API_KEY=vos_live_... VOLUND_AGENT_ID=<uuid> npx tsx examples/quickstart.ts
+ *
+ * VOLUND_AGENT_ID é o UUID do agente, SEM prefixo (a API não aceita "agt_<uuid>").
  */
 import { VolundOS } from "../src/index";
 

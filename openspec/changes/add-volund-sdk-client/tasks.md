@@ -59,6 +59,10 @@ concluir. NÃO commitar até `typecheck` + `test` + `build` passarem.
           409→`VolundRunBusyError` do SDK está correto e coberto por unit test; falta o
           servidor mandar o 409. Ação: abrir issue no volund-os para enforçar a trava
           de thread ocupada (ou documentar que runs são enfileirados).
+  - [x] 6.2.2 **Doc do `VOLUND_AGENT_ID`.** O `.env.example`/`quickstart` sugeriam
+          `agt_<uuid>`, mas a API espera o UUID PURO (com prefixo dá 404
+          `agent_not_found`). Validado ao vivo no preview SSE. Corrigido em
+          `.env.example` + `examples/quickstart.ts`.
 
 ## 7. Validação OpenSpec
 - [ ] 7.1 `openspec validate add-volund-sdk-client`.
