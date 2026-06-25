@@ -100,6 +100,17 @@ describe("postStream — retry", () => {
     expect(n).toBe(1);
   });
 
+  it("default é SEM retry (run/continue não são idempotentes)", async () => {
+    let n = 0;
+    const fetchImpl = (async () => {
+      n++;
+      return jsonError(500, "internal_error");
+    }) as typeof fetch;
+    const cfg = baseCfg(fetchImpl); // sem maxRetries → usa o DEFAULT (0)
+    await expect(postStream(cfg, "/p", BODY)).rejects.toMatchObject({ code: "internal_error" });
+    expect(n).toBe(1); // 1 tentativa só, nenhum retry
+  });
+
   it("maxRetries:0 desliga o retry", async () => {
     let n = 0;
     const fetchImpl = (async () => {

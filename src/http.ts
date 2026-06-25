@@ -14,8 +14,9 @@
  *    ligado ao fetch p/ `run.cancel()` abortar o stream a qualquer momento.
  *  - RETRY com backoff exponencial só na fase pré-stream e só p/ erro de rede e
  *    5xx (nunca 4xx, que são determinísticos). ⚠️ `run`/`continue` NÃO são
- *    idempotentes: um 5xx pode ter criado o run mesmo assim. Por isso o default
- *    é conservador e o retry é desligável (`maxRetries: 0`).
+ *    idempotentes: um 5xx (ou queda de conexão) pode ter criado o run mesmo
+ *    assim. Por isso o DEFAULT é 0 (SEM retry automático) — habilite via
+ *    `maxRetries` só se a duplicidade de runs for aceitável no seu caso.
  */
 
 import { errorFromApiResponse, VolundError } from "./errors";
@@ -23,8 +24,12 @@ import type { VolundFileInput } from "./protocol/events";
 
 /** Timeout default (ms) p/ receber a resposta. 0 desliga. */
 export const DEFAULT_TIMEOUT_MS = 60_000;
-/** Tentativas extras default em erro de rede/5xx. */
-export const DEFAULT_MAX_RETRIES = 2;
+/**
+ * Tentativas extras default. 0 = SEM retry automático, porque `run`/`continue`
+ * NÃO são idempotentes (retentar pode criar runs duplicados). Habilite por config
+ * apenas se a duplicidade for aceitável.
+ */
+export const DEFAULT_MAX_RETRIES = 0;
 /** Base do backoff exponencial (ms): 300, 600, 1200... */
 const RETRY_BASE_MS = 300;
 
@@ -77,9 +82,16 @@ function linkAbort(external: AbortSignal | undefined, timeoutMs: number) {
     signal: controller.signal,
     /** Foi o timeout (e não o cancel do usuário) que abortou? */
     timedOut: () => timedOut,
-    /** Desarma o timeout sem soltar a ligação com o sinal externo. */
+    /** Desarma o timeout MANTENDO a ligação com o sinal externo. Use no sucesso,
+     *  p/ `run.cancel()` seguir abortando o stream em andamento. */
     clearTimer: () => {
       if (timer) clearTimeout(timer);
+    },
+    /** Desarma o timer E solta o listener do sinal externo. Use em tentativas
+     *  abandonadas (erro/retry) p/ não vazar listeners no signal do usuário. */
+    dispose: () => {
+      if (timer) clearTimeout(timer);
+      if (external) external.removeEventListener("abort", onExternalAbort);
     },
   };
 }
@@ -130,7 +142,8 @@ export async function postStream(
       });
     } catch (cause) {
       // Resposta nunca chegou. Timeout do usuário? cancel? falha de transporte?
-      link.clearTimer();
+      // Tentativa abandonada → dispose (solta o listener do signal externo).
+      link.dispose();
       if (link.timedOut()) {
         lastError = new VolundError(
           `Timeout (${timeoutMs}ms) esperando resposta de ${path}.`,
@@ -162,6 +175,9 @@ export async function postStream(
     if (res.ok && contentType.includes("text/event-stream")) {
       return res;
     }
+
+    // Resposta não-stream = erro: esta tentativa acabou, solta o link (listener).
+    link.dispose();
 
     // Caminho de erro: tenta ler `{ error, message }`; se não for JSON, sintetiza.
     let errBody: { error?: string; message?: string } = {};

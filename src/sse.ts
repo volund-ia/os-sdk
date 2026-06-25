@@ -72,6 +72,12 @@ export async function* parseVolundSSE(
       // onEvent já rodou (síncrono) durante feed() — drena o que acumulou.
       while (queue.length > 0) yield queue.shift() as VolundEvent;
     }
+    // Flush final do decoder (bytes multibyte pendentes no fim do stream).
+    const tail = decoder.decode();
+    if (tail) {
+      parser.feed(tail);
+      while (queue.length > 0) yield queue.shift() as VolundEvent;
+    }
   } finally {
     reader.releaseLock();
   }

@@ -33,9 +33,10 @@ export interface VolundOSConfig {
    */
   timeoutMs?: number;
   /**
-   * Tentativas extras em erro de rede/5xx (só na fase pré-stream). Default: 2.
-   * Use 0 para desligar. ⚠️ `run`/`continue` não são idempotentes — um 5xx pode
-   * ter criado o run mesmo assim; baixe para 0 se a duplicidade for inaceitável.
+   * Tentativas extras em erro de rede/5xx (só na fase pré-stream). **Default: 0
+   * (sem retry).** ⚠️ `run`/`continue` não são idempotentes — um 5xx ou queda de
+   * conexão pode ter criado o run mesmo assim, então retentar pode DUPLICAR runs.
+   * Só aumente se a duplicidade for aceitável no seu caso de uso.
    */
   maxRetries?: number;
 }
