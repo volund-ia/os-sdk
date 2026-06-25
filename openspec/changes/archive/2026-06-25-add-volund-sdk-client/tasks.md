@@ -45,15 +45,18 @@ concluir. NÃO commitar até `typecheck` + `test` + `build` passarem.
         instalado em projeto limpo com tipos ok sob `moduleResolution: nodenext`.
 - [x] 5.4 CI verde (`.github/workflows/ci.yml`): check:protocol, typecheck, test, build.
         (✓ PR #2, job `build-test` verde.)
-- [ ] 5.5 Publicar `@volund-ia/sdk@0.2.0` (beta) — `npm publish --access public`.
+- [x] 5.5 Publicado `@volund-ia/sdk@0.2.0` (dist-tag **beta**, público via
+        `publishConfig.access`) + tag git `v0.2.0`. Org npm: `volund-ia`.
 
 ## 6. Dogfooding (§5 passo 8)
 - [x] 6.1 Rodar contra agente real (`agt` UUID `6cb25420-…`, preview SSE da Vercel
         sobre o banco de produção). Validados ao vivo: `run` (quickstart), `continue`
         multi-turn com memória de thread (`examples/multiturn.ts`), `run.result()`
         (`examples/edge-result.ts`), `run.cancel()` → AbortError (`examples/edge-cancel.ts`).
-- [ ] 6.2 Ajustar a DX com base na dor sentida; abrir issues p/ a V2 se houver.
-  - [ ] 6.2.1 **[backend, não-SDK] `run_busy` não é emitido.** A API do volund-os NÃO
+- [x] 6.2 DX validada no dogfooding (sem dor bloqueante). 6.2.2 corrigido; 6.2.1
+        é follow-up de **backend** (fora do escopo do SDK).
+  - [x] 6.2.1 **[backend, não-SDK] `run_busy` não é emitido.** (documentado; issue
+          rascunhada p/ o `volund-os` — fora do escopo do SDK) A API do volund-os NÃO
           sinaliza 409 quando se dispara `continue` numa thread com run ativo — ela
           aceita o run concorrente (ver `examples/edge-busy.ts`). O mapeamento
           409→`VolundRunBusyError` do SDK está correto e coberto por unit test; falta o
@@ -65,5 +68,5 @@ concluir. NÃO commitar até `typecheck` + `test` + `build` passarem.
           `.env.example` + `examples/quickstart.ts`.
 
 ## 7. Validação OpenSpec
-- [ ] 7.1 `openspec validate add-volund-sdk-client`.
-- [ ] 7.2 `openspec archive add-volund-sdk-client` quando tudo acima fechar.
+- [x] 7.1 `openspec validate add-volund-sdk-client` → "Change is valid".
+- [x] 7.2 `openspec archive add-volund-sdk-client`.
