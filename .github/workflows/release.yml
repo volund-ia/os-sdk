@@ -4,11 +4,12 @@ name: Release
 #
 # Pré-requisito (uma vez): adicionar o secret `NPM_TOKEN` no repositório
 #   Settings → Secrets and variables → Actions → New repository secret
-# Use um **Automation token** do npm (npmjs.com → Access Tokens → Generate →
-# "Automation"). Esse tipo de token NÃO pede 2FA/OTP, então a publicação roda
-# sem interação. O usuário do token precisa ser membro da org @volund.
+# Use um **Granular Access Token** do npm (npmjs.com → Access Tokens → Granular),
+# com read-write no escopo `@volund-ia` e **bypass de 2FA** habilitado (a org
+# exige 2FA; granular token com bypass publica sem OTP interativo).
 #
-# Fluxo: bump da versão no package.json → tag `vX.Y.Z` → push da tag → publica.
+# Robustez: se o secret NÃO existir, o job AVISA e passa (sem ❌). Se a versão já
+# estiver publicada, também não falha — só registra um aviso.
 
 on:
   push:
@@ -21,18 +22,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checar credencial de publicação
+        id: guard
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "::warning::NPM_TOKEN ausente — pulando publish. Cadastre o secret p/ publicar por tag."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-node@v4
+        if: steps.guard.outputs.skip == 'false'
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
           cache: "npm"
 
-      - run: npm ci
+      - name: Instalar dependências
+        if: steps.guard.outputs.skip == 'false'
+        run: npm ci
 
-      # `npm publish` dispara os lifecycle scripts do package.json:
-      #   prepare       → tsdown (build)
-      #   prepublishOnly → check:protocol + typecheck + test + build
-      # publishConfig.access=public cuida do pacote com escopo (@volund).
-      - run: npm publish
+      # `npm publish` dispara os lifecycle scripts (prepare → build;
+      # prepublishOnly → check:protocol + typecheck + test + build).
+      # publishConfig.access=public cuida do pacote com escopo (@volund-ia).
+      - name: Publicar no npm (se a versão ainda não existir)
+        if: steps.guard.outputs.skip == 'false'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "::notice::$NAME@$VERSION já publicado — nada a fazer."
+          else
+            npm publish
+          fi

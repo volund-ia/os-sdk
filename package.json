@@ -67,11 +67,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anaraque-l/volund-sdk.git"
+    "url": "git+https://github.com/volund-ia/os-sdk.git"
   },
-  "author": "Ana Raquel",
+  "author": "Volund (volund-ia)",
   "bugs": {
-    "url": "https://github.com/anaraque-l/volund-sdk/issues"
+    "url": "https://github.com/volund-ia/os-sdk/issues"
   },
-  "homepage": "https://github.com/anaraque-l/volund-sdk#readme"
+  "homepage": "https://github.com/volund-ia/os-sdk#readme"
 }
