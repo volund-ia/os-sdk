@@ -54,6 +54,9 @@ de vault na mão.
 
 ## Item 2 — HITL: aprovação (`awaiting_approval`)
 
+**STATUS (27/06):** passos 1+2 implementados em **volund-os#174** (aberto p/ review,
+TDD 15/15). Falta o passo 3 (decide por API key) e o passo 5 (helper no SDK).
+
 **INVESTIGADO (26/06) — o mecanismo JÁ existe internamente:**
 - `lib/agent/core/tools/approval.ts`: o `withApprovalGate` persiste o pedido, flipa a
   thread para `execution_status:"awaiting_approval"` (+ `awaiting_approval_request_id`),

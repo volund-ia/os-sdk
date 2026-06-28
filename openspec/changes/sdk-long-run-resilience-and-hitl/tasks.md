@@ -28,10 +28,11 @@
 ## 3. HITL — aprovação (Item 2 — [backend] primeiro; mecanismo JÁ existe)
 > Investigação 26/06: sentinel `__approval_pending__`, status `awaiting_approval` e
 > `resumeAgentAfterDecision` já existem (fluxo web). Falta surfar na API + decide por API key.
-- [ ] 3.1 **[backend]** `sse-adapter.ts`: detectar `__approval_pending__` e emitir
-        `awaiting_input{kind:"approval"}` (espelhar o sentinel de vault).
-- [ ] 3.2 **[backend]** `events.ts`: widen `kind` → `"vault" | "approval"` + bump
-        `SCHEMA_VERSION`; re-vendorar no SDK via `npm run sync:protocol`.
+- [x] 3.1 **[backend]** `sse-adapter.ts` detecta `__approval_pending__` e emite
+        `awaiting_input{kind:"approval"}` — **volund-os#174** (aberto; TDD 15/15).
+- [x] 3.2a **[backend]** `events.ts`: `kind` → `"vault" | "approval"` — **volund-os#174**
+        (ADITIVO; **sem** bump de `SCHEMA_VERSION` — clientes antigos ignoram kind novo).
+- [ ] 3.2b Re-vendorar o contrato no SDK via `npm run sync:protocol` (após #174 mergear).
 - [ ] 3.3 **[backend]** `POST /api/v1/approvals/{id}/decide` (auth API key, reusa
         `resumeAgentAfterDecision`).
 - [ ] 3.4 **[backend]** Verificar que o approval gate dispara p/ `source:"api"`.

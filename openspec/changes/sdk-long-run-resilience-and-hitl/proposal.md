@@ -23,7 +23,7 @@ para os pendentes — sem fechar portas para a V2.
 | **Abort → `handle.kill()`** | ✅ Feito | Servidor (`sse-adapter` liga `req.signal`→kill) **e** SDK (`run.cancel()` + teardown ao abandonar o stream) |
 | **Drain obrigatório** | ✅ Feito | Servidor (o adapter drena o stream inteiro, disparando persister/hooks) |
 | **Heartbeat `: ping`** | ✅ Feito | Servidor envia a cada ~15s; o parser do SDK ignora comentários |
-| **Concorrência `409 run_busy`** | ✅ Feito | SDK mapeia `409 → VolundRunBusyError`; backend passou a emitir (volund-os #163, CAS atômico) |
+| **Concorrência `409 run_busy`** | ✅ **Resolvido** | SDK mapeia `409 → VolundRunBusyError`; backend emite (volund-os **#163, MERGED 26/06**, CAS atômico). Follow-up 6.2.1 do change arquivado: **encerrado**. |
 | **HITL — vault (`awaiting_input`)** | 🟡 Parcial | SDK **emite** `awaiting_input{kind:"vault"}` e fecha o stream; **falta** o helper de *retomar* (preencher o cofre + continuar) |
 | **maxDuration / limites da Vercel** | 🟡 A confirmar | Rota usa `maxDuration=800`; falta **confirmar o teto do plano Vercel** e dar guidance no SDK p/ runs longos |
 
