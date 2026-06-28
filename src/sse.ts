@@ -20,6 +20,7 @@
 
 import { createParser } from "eventsource-parser";
 
+import { VolundError } from "./errors";
 import type { VolundEvent, VolundEventType } from "./protocol/events";
 
 const KNOWN_TYPES: ReadonlySet<VolundEventType> = new Set<VolundEventType>([
@@ -45,9 +46,52 @@ function isVolundEvent(value: unknown): value is VolundEvent {
  * Transforma o corpo de uma resposta `text/event-stream` numa sequência de
  * `VolundEvent`. Web-standard: roda em Node ≥18, Deno, Bun, Workers e browser.
  */
+export interface ParseOptions {
+  /**
+   * Aborta o stream se NENHUM byte (evento ou heartbeat `: ping`) chegar dentro
+   * deste intervalo (ms). 0/ausente = desligado. Diferente do timeout pré-stream:
+   * cobre silêncios DURANTE o stream. Heartbeats resetam (são bytes recebidos).
+   */
+  idleTimeoutMs?: number;
+}
+
+/**
+ * Lê o próximo pedaço com guarda de OCIOSIDADE: se nada chegar em `idleMs`,
+ * cancela o reader (fecha a conexão) e rejeita com `code: "timeout"`.
+ */
+function readChunk(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  idleMs: number
+): Promise<ReadableStreamReadResult<Uint8Array>> {
+  if (idleMs <= 0) return reader.read();
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      void reader.cancel().catch(() => {});
+      reject(
+        new VolundError(
+          `Stream ocioso por mais de ${idleMs}ms (sem eventos nem heartbeat).`,
+          { code: "timeout" }
+        )
+      );
+    }, idleMs);
+    reader.read().then(
+      (result) => {
+        clearTimeout(timer);
+        resolve(result);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
 export async function* parseVolundSSE(
-  body: ReadableStream<Uint8Array>
+  body: ReadableStream<Uint8Array>,
+  opts: ParseOptions = {}
 ): AsyncGenerator<VolundEvent> {
+  const idleMs = opts.idleTimeoutMs ?? 0;
   const queue: VolundEvent[] = [];
   const parser = createParser({
     onEvent(event) {
@@ -66,7 +110,7 @@ export async function* parseVolundSSE(
   const decoder = new TextDecoder();
   try {
     while (true) {
-      const { done, value } = await reader.read();
+      const { done, value } = await readChunk(reader, idleMs);
       if (done) break;
       parser.feed(decoder.decode(value, { stream: true }));
       // onEvent já rodou (síncrono) durante feed() — drena o que acumulou.

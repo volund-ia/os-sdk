@@ -22,12 +22,19 @@ export class Run {
   #id: string;
   #response: Response;
   #abort: AbortController;
+  #idleTimeoutMs: number;
   #consumed = false;
 
-  constructor(response: Response, id: string, abort: AbortController) {
+  constructor(
+    response: Response,
+    id: string,
+    abort: AbortController,
+    opts: { idleTimeoutMs?: number } = {}
+  ) {
     this.#response = response;
     this.#id = id;
     this.#abort = abort;
+    this.#idleTimeoutMs = opts.idleTimeoutMs ?? 0;
   }
 
   /**
@@ -68,7 +75,7 @@ export class Run {
     // O servidor já está encerrando por conta própria? (terminal ou parqueado)
     let serverClosing = false;
     try {
-      for await (const event of parseVolundSSE(body)) {
+      for await (const event of parseVolundSSE(body, { idleTimeoutMs: this.#idleTimeoutMs })) {
         // Para run novo, o id real chega aqui (run_started). Backfill barato.
         if (event.type === "run_started" && event.run_id) this.#id = event.run_id;
         if (event.type === "run_finished" || event.type === "awaiting_input") {

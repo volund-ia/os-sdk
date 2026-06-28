@@ -55,7 +55,9 @@ export class Agents {
       body,
       controller.signal
     );
-    return new Run(res, runIdFromResponse(res), controller);
+    return new Run(res, runIdFromResponse(res), controller, {
+      idleTimeoutMs: this.#http.idleTimeoutMs,
+    });
   }
 
   /** Continua uma conversa existente (mesma thread). */
@@ -73,7 +75,9 @@ export class Agents {
       body,
       controller.signal
     );
-    return new Run(res, options.runId, controller);
+    return new Run(res, options.runId, controller, {
+      idleTimeoutMs: this.#http.idleTimeoutMs,
+    });
   }
 }
 

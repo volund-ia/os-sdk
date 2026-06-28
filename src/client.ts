@@ -39,6 +39,12 @@ export interface VolundOSConfig {
    * Só aumente se a duplicidade for aceitável no seu caso de uso.
    */
   maxRetries?: number;
+  /**
+   * Idle timeout (ms) da fase de STREAMING: aborta o run se nenhum byte (evento
+   * ou heartbeat) chegar nesse intervalo. NÃO confunda com `timeoutMs` (pré-stream)
+   * nem com a duração total do run (que pode ser longa). Default: desligado.
+   */
+  idleTimeoutMs?: number;
 }
 
 export class VolundOS {
@@ -66,6 +72,7 @@ export class VolundOS {
       ...(config.defaultHeaders ? { defaultHeaders: config.defaultHeaders } : {}),
       ...(config.timeoutMs !== undefined ? { timeoutMs: config.timeoutMs } : {}),
       ...(config.maxRetries !== undefined ? { maxRetries: config.maxRetries } : {}),
+      ...(config.idleTimeoutMs !== undefined ? { idleTimeoutMs: config.idleTimeoutMs } : {}),
     };
 
     this.agents = new Agents(http);
