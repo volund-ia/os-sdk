@@ -38,27 +38,47 @@ de vault na mão.
   ```
 - **Decisão de escopo:** na primeira iteração, **só os helpers de submeter** + um
   `continue` para reabrir o stream. Retomar o **mesmo** stream sem reabrir é o Item 4.
-- **Pré-requisito:** mapear os endpoints reais de vault no `volund-os` (rota, corpo,
-  auth). **Não inventar** — confirmar no servidor.
+- **INVESTIGADO (26/06):** NÃO existe endpoint de vault autenticado por **API key**.
+  As rotas atuais usam **sessão web** (`supabase.auth.getUser()` em
+  `/api/vault-requests/[id]` e `/api/agents/[agentId]/vault/*`) ou **token de run
+  interno** (`/api/v2/mcp/vault-fill` via `authenticateRunToken`). O resume
+  (`lib/vault/resume.ts` → `fulfillVaultRequest`) é construído em torno do conector web.
+- **Conclusão:** vault resume é **backend-first** (igual ao approval) — um `vos_live_`
+  não consegue preencher hoje. NÃO implementar no SDK até existir rota por API key.
 
-**Fronteira:** SDK (wrapper). Não precisa mudar o backend se os endpoints já existem.
+**Fronteira (revisada):** **backend primeiro** — criar
+`POST /api/v1/runs/{runId}/vault/{requestId}` (auth por API key, reusando
+`fulfillVaultRequest`); só então o wrapper no SDK. **Cross-repo.**
 
 ---
 
 ## Item 2 — HITL: aprovação (`awaiting_approval`)
 
-**Hoje:** descopado da V1. Runs via API rodam com `--permission-mode
-bypassPermissions` (não pausam por aprovação de ferramenta). O contrato já documenta
-isso e reserva o modelo genérico `awaiting_input{kind}`.
+**INVESTIGADO (26/06) — o mecanismo JÁ existe internamente:**
+- `lib/agent/core/tools/approval.ts`: o `withApprovalGate` persiste o pedido, flipa a
+  thread para `execution_status:"awaiting_approval"` (+ `awaiting_approval_request_id`),
+  e o tool_result carrega o **sentinel `__approval_pending__:<id>`** — exatamente
+  análogo ao `__vault_request_pending__` do vault.
+- Rotas existentes: `POST /api/approvals/[id]/decide` (`approve`/`reject`) e `/abort` —
+  mas com **auth de sessão web** (`getUser`), não API key. `resumeAgentAfterDecision`
+  (`lib/approvals/resume.ts`) faz o resume.
+- `--permission-mode bypassPermissions` (run.ts) desliga só as prompts NATIVAS do
+  Claude; aprovações configuradas pelo owner seguem ativas via PreToolUse hook — logo
+  runs via API **podem** pausar por aprovação; só não são **surfadas** no stream da API.
 
-**Plano:**
-- **Depende do backend.** Só faz sentido quando o `volund-os` passar a suportar
-  pausa por aprovação na API pública.
-- Quando suportar: adicionar `kind:"approval"` ao `awaiting_input` (no `events.ts`
-  do servidor → re-vendorar via `sync:protocol`), com **bump de `SCHEMA_VERSION`**.
-- SDK ganha helper `volund.runs.approve(runId, approvalId, decision)`.
+**Plano (backend-first, mas pequeno — reusa tudo):**
+1. **Emitir no stream da API:** no `sse-adapter.ts`, detectar `__approval_pending__`
+   no tool_result (espelhar a lógica do sentinel de vault) e emitir
+   `awaiting_input{kind:"approval", request_id}`, suprimindo o sentinel + parkeando.
+2. **Contrato:** widen `AwaitingInputEvent.kind` para `"vault" | "approval"` no
+   `events.ts` (servidor) + **bump `SCHEMA_VERSION`**; re-vendorar no SDK via `sync:protocol`.
+3. **Endpoint por API key:** `POST /api/v1/approvals/{id}/decide` (auth
+   `authenticateApiRequest`, body `{ decision, note? }`, reusa `resumeAgentAfterDecision`;
+   checagem de permissão derivada da API key em vez de `getUser`).
+4. **Verificar** que o PreToolUse approval gate dispara para `source:"api"`.
+5. **SDK (depois):** `runs.approve(runId, requestId, decision)` + tratar `kind:"approval"`.
 
-**Fronteira:** backend primeiro (`volund-os`), depois SDK. **Cross-repo.**
+**Fronteira:** passos 1–4 no `volund-os`; passo 5 no `os-sdk`. **Cross-repo.**
 
 ---
 
