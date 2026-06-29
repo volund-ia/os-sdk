@@ -25,7 +25,7 @@ para os pendentes — sem fechar portas para a V2.
 | **Heartbeat `: ping`** | ✅ Feito | Servidor envia a cada ~15s; o parser do SDK ignora comentários |
 | **Concorrência `409 run_busy`** | ✅ **Resolvido** | SDK mapeia `409 → VolundRunBusyError`; backend emite (volund-os **#163, MERGED 26/06**, CAS atômico). Follow-up 6.2.1 do change arquivado: **encerrado**. |
 | **HITL — vault (`awaiting_input`)** | 🟡 Parcial | SDK **emite** `awaiting_input{kind:"vault"}` e fecha o stream; **falta** o helper de *retomar* (preencher o cofre + continuar) |
-| **maxDuration / limites da Vercel** | 🟡 A confirmar | Rota usa `maxDuration=800`; falta **confirmar o teto do plano Vercel** e dar guidance no SDK p/ runs longos |
+| **maxDuration / limites da Vercel** | 🟡 A confirmar (ops) | **Revisado 27/06:** todas as rotas v1 = `maxDuration=800`; `vercel.json` sem cap de `functions`. Teto efetivo = **plano Vercel / Fluid Compute**. Falta confirmar no painel se honra 800s. SDK já tem idle timeout (#3). |
 
 ## What Changes (itens DEFERIDOS — escopo desta proposta)
 

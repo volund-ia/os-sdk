@@ -7,7 +7,12 @@
 - [x] 0.1 Mapeado (26/06): **NÃO há endpoint de vault por API key** — só sessão web
         (`/api/vault-requests/[id]`, `getUser`) ou token de run interno
         (`/api/v2/mcp/vault-fill`). Vault resume vira **[backend]** (ver design).
-- [ ] 0.2 **[infra]** Confirmar o teto efetivo de `maxDuration` no plano Vercel em uso.
+- [~] 0.2 **[infra]** maxDuration. **Revisado (27/06):** todas as rotas v1 declaram
+        `export const maxDuration = 800` (run, stream, continue, approvals/decide) e o
+        `vercel.json` **NÃO** tem cap de `functions`. → o teto efetivo depende do
+        **plano Vercel / Fluid Compute**, não do código (`800` só vale se o plano
+        permitir; senão a plataforma corta). **Falta:** confirmar no **painel da Vercel**
+        se o plano honra 800s. Sem PR — é checagem de ops.
 
 ## 1. Resiliência a runs longos (Item 3 — começar por aqui, é barato)
 - [ ] 1.1 Documentar no README: `timeoutMs` é **pré-stream**, não duração do run;
