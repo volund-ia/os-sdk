@@ -12,8 +12,13 @@
    (regra de ouro do `events.ts`).
 3. **Separar o que é SDK do que é backend.** Vários itens dependem do `volund-os`;
    marcar a fronteira explicitamente.
-4. **Versionar o contrato.** Qualquer evento novo (ex.: `awaiting_approval`) entra
-   com bump de `SCHEMA_VERSION` e a regra "clientes ignoram o que não conhecem".
+4. **Versionar com cuidado** — `SCHEMA_VERSION` é o **protocolo do wire**
+   (`protocol:"v1"`), **não** o semver do pacote. Mudança **aditiva** (novo valor de
+   `kind`, novo evento) é compatível no wire → **NÃO** bumpar `SCHEMA_VERSION` (e
+   clientes ignoram o que não conhecem em runtime). A mudança de **tipo TS** que isso
+   causa (união mais larga) sinaliza-se via **semver minor do pacote** + **nota de
+   migração**. Só mudança **incompatível** de shape (alterar/remover campo) exige bump
+   de `SCHEMA_VERSION` (MAJOR).
 
 ---
 
@@ -74,7 +79,11 @@ TDD 15/15). Falta o passo 3 (decide por API key) e o passo 5 (helper no SDK).
    no tool_result (espelhar a lógica do sentinel de vault) e emitir
    `awaiting_input{kind:"approval", request_id}`, suprimindo o sentinel + parkeando.
 2. **Contrato:** widen `AwaitingInputEvent.kind` para `"vault" | "approval"` no
-   `events.ts` (servidor) + **bump `SCHEMA_VERSION`**; re-vendorar no SDK via `sync:protocol`.
+   `events.ts` (servidor) — **aditivo no wire, SEM bump de `SCHEMA_VERSION`**;
+   re-vendorar no SDK via `sync:protocol`. ⚠️ O widen **não** é aditivo em
+   **compile-time TS** (quebra *exhaustive checks* e o próprio
+   `VolundAwaitingInputError.kind`): sinalizar via **semver minor** do pacote (`0.3.0`)
+   + **nota de migração**, e widenar os tipos do SDK no re-vendor.
 3. **Endpoint por API key:** `POST /api/v1/approvals/{id}/decide` (auth
    `authenticateApiRequest`, body `{ decision, note? }`, reusa `resumeAgentAfterDecision`;
    checagem de permissão derivada da API key em vez de `getUser`).
@@ -135,5 +144,7 @@ próprio §3.5.
 - ❌ Inventar endpoints de vault/approval — confirmar os reais no `volund-os`.
 - ❌ Abortar a conexão ao receber `awaiting_input` achando que "acabou" — o servidor
   precisa terminar de persistir o estado parqueado (já tratado no SDK atual; manter).
-- ❌ Mudar o shape de eventos existentes sem bump de `SCHEMA_VERSION`.
+- ❌ Mudar o shape de eventos de forma **incompatível** (alterar/remover campo) sem
+  bump de `SCHEMA_VERSION` (MAJOR). *(Adicionar valor a uma união é aditivo no wire —
+  ver Princípio 4: sinaliza-se por semver minor do pacote, não por `SCHEMA_VERSION`.)*
 - ❌ Ligar reconexão por padrão antes do backend suportar replay por `Last-Event-ID`.

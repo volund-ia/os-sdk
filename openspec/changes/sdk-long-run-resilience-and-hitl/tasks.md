@@ -36,8 +36,11 @@
 - [x] 3.1 **[backend]** `sse-adapter.ts` detecta `__approval_pending__` e emite
         `awaiting_input{kind:"approval"}` — **volund-os#174** (aberto; TDD 15/15).
 - [x] 3.2a **[backend]** `events.ts`: `kind` → `"vault" | "approval"` — **volund-os#174**
-        (ADITIVO; **sem** bump de `SCHEMA_VERSION` — clientes antigos ignoram kind novo).
-- [ ] 3.2b Re-vendorar o contrato no SDK via `npm run sync:protocol` (após #174 mergear).
+        (ADITIVO no **wire**; **sem** bump de `SCHEMA_VERSION`. ⚠️ NÃO é aditivo em
+        **compile-time TS** — a união mais larga quebra *exhaustive checks*; ver 3.2b).
+- [ ] 3.2b Re-vendorar no SDK (`npm run sync:protocol`, após #174 mergear) → widenar
+        `VolundAwaitingInputError.kind` + `result()`, **bump minor (`0.3.0`)** + **nota
+        de migração** (switches exaustivos podem precisar de um `case "approval"`).
 - [ ] 3.3 **[backend]** `POST /api/v1/approvals/{id}/decide` (auth API key, reusa
         `resumeAgentAfterDecision`).
 - [ ] 3.4 **[backend]** Verificar que o approval gate dispara p/ `source:"api"`.
