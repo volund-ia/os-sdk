@@ -54,6 +54,54 @@ export interface StreamRequestBody {
   files?: VolundFileInput[];
 }
 
+/**
+ * POST JSON (não-stream) → devolve o corpo parseado. Usado por endpoints comuns
+ * da v1 (ex.: decidir aprovação). Mapeia erro `{ error, message }` para a
+ * subclasse tipada de `VolundError`, igual ao caminho de stream.
+ */
+export async function postJson<T = unknown>(
+  cfg: HttpConfig,
+  path: string,
+  body: unknown,
+  signal?: AbortSignal
+): Promise<T> {
+  const url = `${cfg.baseUrl.replace(/\/+$/, "")}${path}`;
+
+  let res: Response;
+  try {
+    res = await cfg.fetch(url, {
+      method: "POST",
+      headers: {
+        ...cfg.defaultHeaders,
+        Authorization: `Bearer ${cfg.apiKey}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(body),
+      signal,
+    });
+  } catch (cause) {
+    throw new VolundError(`Falha de rede ao chamar ${path}.`, { code: "network_error", cause });
+  }
+
+  let parsed: unknown = null;
+  const text = await res.text();
+  if (text) {
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = null;
+    }
+  }
+
+  if (!res.ok) {
+    const b =
+      parsed && typeof parsed === "object" ? (parsed as { error?: string; message?: string }) : {};
+    throw errorFromApiResponse(res.status, b);
+  }
+  return parsed as T;
+}
+
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /**
