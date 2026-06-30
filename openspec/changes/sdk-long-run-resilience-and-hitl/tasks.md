@@ -18,7 +18,7 @@
 - [ ] 1.1 Documentar no README: `timeoutMs` é **pré-stream**, não duração do run;
         runs longos dependem do limite do servidor.
 - [ ] 1.2 Registrar o limite confirmado em 0.2 na doc.
-- [ ] 1.3 (Opcional) Avaliar um *idle timeout* opt-in (abortar após N s sem evento).
+- [x] 1.3 *Idle timeout* opt-in → **promovido para a change `add-sdk-idle-timeout`** (implementado por TDD).
 
 ## 2. HITL — retomar vault (Item 1) — 🔒 BLOQUEADO (backend-first)
 > 0.1 confirmou: não há endpoint por API key. Precede o SDK.

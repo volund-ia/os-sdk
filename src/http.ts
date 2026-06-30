@@ -43,6 +43,8 @@ export interface HttpConfig {
   timeoutMs?: number;
   /** Tentativas extras em erro de rede/5xx. Default 2. 0 desliga. */
   maxRetries?: number;
+  /** Idle timeout (ms) da fase de STREAMING — propagado ao `Run`. 0 = desligado. */
+  idleTimeoutMs?: number;
   /** Sleep injetável (testes). Default: setTimeout real. */
   sleep?: (ms: number) => Promise<void>;
 }

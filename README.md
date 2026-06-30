@@ -121,6 +121,23 @@ npm install anaraque-l/volund-sdk   # do GitHub (builda no install via `prepare`
 npm pack && npm install ./volund-sdk-0.2.0.tgz
 ```
 
+## Timeouts e runs longos
+
+O SDK tem **dois** timeouts, e **nenhum** limita a duração total do run:
+
+- **`timeoutMs`** (default 60s) — só a fase **pré-stream**: tempo máximo até a
+  *resposta* (headers) chegar. Assim que o stream começa, é desarmado.
+- **`idleTimeoutMs`** (default desligado) — durante o stream: aborta se **nenhum
+  dado** (evento *ou* heartbeat) chegar nesse intervalo. Serve para detectar
+  conexões travadas sem matar runs longos saudáveis — o servidor manda heartbeat
+  `: ping` (~15s) que **reseta** o ocioso.
+- **Duração total do run** NÃO é limitada pelo SDK — depende do servidor/plataforma
+  (a rota usa `maxDuration`; confirme o teto do seu plano de deploy).
+
+```ts
+new VolundOS({ apiKey, timeoutMs: 30_000, idleTimeoutMs: 120_000 });
+```
+
 ## Desenvolvimento
 
 ```bash
