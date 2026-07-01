@@ -42,7 +42,18 @@
         `result()` widenados, **bump minor `0.3.0`** + **nota de migração** no README.
 - [x] 3.3 **[backend]** `POST /api/v1/approvals/{id}/decide` (auth API key, reusa
         `resumeAgentAfterDecision`) — **volund-os#175 (MERGED)**.
-- [ ] 3.4 **[backend]** Verificar que o approval gate dispara p/ `source:"api"`.
+- [x] 3.4 **[backend]** Verificar que o approval gate dispara p/ `source:"api"`.
+        **Verificado estaticamente (01/07) no `volund-os@main` — nenhuma mudança de
+        backend necessária:** o `approvalGate` (`engine.ts:179`) é montado quando
+        `(delegationDepth ?? 0) === 0 && chattingUserId` — **sem** condição de origem.
+        O conector de API (`connectors/api/run.ts:256-264`) passa `chattingUserId:
+        userId` + `source:"api"`, então o gate é montado. O `chatSource === "web"` em
+        `assemble.ts:179` gateia **resolução de credencial do Composio** (`end_user`),
+        não o approval. O gate efetivo (`assemble.ts:550-561`) dispara quando
+        `approvalGate && approvalConfig`; `approvalConfig` vem de
+        `resolveAgentApprovalConfig(supabase, agent.id)` — depende só da config **do
+        agente**. Requisito p/ dogfooding: o agente-alvo ter aprovação configurada pelo
+        owner. Script e2e pré-pronto em `examples/approval.ts`.
 - [x] 3.5 SDK: helper **`volund.approvals.approve/reject/decide(approvalId, …)`**
         (renomeado de `runs.approve` — bate com o endpoint `/approvals/{id}`) + trata
         `kind:"approval"` + testes. *(Naming superou o rascunho `runs.approve`.)*
