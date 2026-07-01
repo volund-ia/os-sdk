@@ -6,6 +6,7 @@
  */
 
 import { Agents } from "./agents";
+import { Approvals } from "./approvals";
 import { VolundError } from "./errors";
 import type { HttpConfig } from "./http";
 
@@ -50,6 +51,8 @@ export interface VolundOSConfig {
 export class VolundOS {
   /** Disparo e continuação de runs de agente. */
   readonly agents: Agents;
+  /** Decisão de aprovações HITL (approve/reject) — ver `awaiting_input{kind:"approval"}`. */
+  readonly approvals: Approvals;
 
   constructor(config: VolundOSConfig) {
     if (!config?.apiKey || typeof config.apiKey !== "string") {
@@ -76,5 +79,6 @@ export class VolundOS {
     };
 
     this.agents = new Agents(http);
+    this.approvals = new Approvals(http);
   }
 }

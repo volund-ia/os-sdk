@@ -13,6 +13,12 @@
 // Cliente e operações
 export { VolundOS, type VolundOSConfig } from "./client";
 export { Agents, type RunOptions, type ContinueOptions } from "./agents";
+export {
+  Approvals,
+  type ApprovalDecision,
+  type DecideOptions,
+  type DecideResult,
+} from "./approvals";
 export { Run, type RunResult } from "./run";
 
 // Parser SSE (útil p/ quem consome a API diretamente, sem o cliente)
