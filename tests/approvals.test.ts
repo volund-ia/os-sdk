@@ -100,3 +100,29 @@ describe("approvals.approve / reject / decide", () => {
     });
   });
 });
+
+describe("result() com awaiting_input{kind:'approval'}", () => {
+  it("lança VolundAwaitingInputError carregando kind e request_id", async () => {
+    const enc = new TextEncoder();
+    const wire =
+      `data: ${JSON.stringify({ type: "run_started", protocol: "v1", run_id: "t1", agent_id: "a" })}\n\n` +
+      `data: ${JSON.stringify({ type: "awaiting_input", request_id: "req_1", kind: "approval" })}\n\n`;
+    const sse = new Response(
+      new ReadableStream<Uint8Array>({
+        start(c) {
+          c.enqueue(enc.encode(wire));
+          c.close();
+        },
+      }),
+      { status: 200, headers: { "content-type": "text/event-stream" } }
+    );
+    const fetchImpl = (async () => sse) as typeof fetch;
+    const volund = new VolundOS({ apiKey: "k", fetch: fetchImpl });
+    const run = await volund.agents.run({ agentId: "a", input: "x" });
+    await expect(run.result()).rejects.toMatchObject({
+      code: "awaiting_input",
+      kind: "approval",
+      requestId: "req_1",
+    });
+  });
+});

@@ -82,15 +82,16 @@ export class VolundRunFailedError extends VolundError {
 }
 
 /**
- * O run pausou esperando ação humana (HITL — na V1, preenchimento de cofre).
- * `run.result()` lança isto porque o stream termina sem `run_finished`. Quem
- * usa `run.stream()` recebe o evento `awaiting_input` normalmente, sem exceção.
+ * O run pausou esperando ação humana (HITL): preenchimento de cofre (`vault`) ou
+ * decisão de aprovação (`approval` — decida com `volund.approvals.approve/reject`).
+ * `run.result()` lança isto porque o stream termina sem `run_finished`. Quem usa
+ * `run.stream()` recebe o evento `awaiting_input` normalmente, sem exceção.
  */
 export class VolundAwaitingInputError extends VolundError {
   readonly requestId: string;
-  readonly kind: "vault";
+  readonly kind: "vault" | "approval";
 
-  constructor(requestId: string, kind: "vault") {
+  constructor(requestId: string, kind: "vault" | "approval") {
     super(`Run pausou aguardando entrada do tipo "${kind}" (request ${requestId}).`, {
       code: "awaiting_input",
     });

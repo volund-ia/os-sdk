@@ -57,7 +57,7 @@ Stream tipado por união discriminada — faça narrowing por `event.type`:
 | `assistant_text_delta`  | `delta` (resposta, streaming)                     |
 | `tool_call`             | `tool_call_id`, `tool_name`, `input`              |
 | `tool_result`           | `tool_call_id`, `output`, `is_error?`             |
-| `awaiting_input`        | `request_id`, `kind: "vault"` (HITL — fecha o stream) |
+| `awaiting_input`        | `request_id`, `kind: "vault" \| "approval"` (HITL — fecha o stream) |
 | `run_finished`          | `status`, `output`, `usage`, `error?`             |
 
 O contrato é **snake_case no fio** (consistente com a API v1 e o ecossistema
@@ -74,10 +74,27 @@ Todos herdam de `VolundError` (tem `.code` e `.status`). Roteie por `instanceof`
 | `VolundNotFoundError`       | 404 — agente/run inexistente            |
 | `VolundRunBusyError`        | 409 — já há run ativo na thread         |
 | `VolundRunFailedError`      | `run.result()` quando o run falha       |
-| `VolundAwaitingInputError`  | `run.result()` quando pausa p/ vault    |
+| `VolundAwaitingInputError`  | `run.result()` quando pausa p/ vault ou approval |
+
+## Aprovações (HITL)
+
+Se o agente pausar esperando aprovação de uma ferramenta, o stream emite
+`awaiting_input` com `kind: "approval"`. Decida por código e o run retoma:
+
+```ts
+for await (const ev of run.stream()) {
+  if (ev.type === "awaiting_input" && ev.kind === "approval") {
+    await volund.approvals.approve(ev.request_id);        // ou .reject(id, { note })
+  }
+}
+```
+
+`volund.approvals`: `approve(id)`, `reject(id, { note? })`, `decide(id, "approve" | "reject", { note? })`.
 
 ## Notas
 
+- **0.3.0:** `AwaitingInputEvent.kind` agora inclui `"approval"` (além de `"vault"`).
+  Aditivo no wire; se você faz *exhaustive switch* em `ev.kind`, adicione um `case "approval"`.
 - **`stream()` é consumível uma única vez** (é um stream de rede). Não combine
   `stream()` e `result()` no mesmo `Run`.
 - `run.cancel()` aborta a conexão — o servidor encerra a sandbox.

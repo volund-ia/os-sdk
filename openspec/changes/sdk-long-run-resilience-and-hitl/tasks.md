@@ -38,14 +38,14 @@
 - [x] 3.2a **[backend]** `events.ts`: `kind` → `"vault" | "approval"` — **volund-os#174**
         (ADITIVO no **wire**; **sem** bump de `SCHEMA_VERSION`. ⚠️ NÃO é aditivo em
         **compile-time TS** — a união mais larga quebra *exhaustive checks*; ver 3.2b).
-- [ ] 3.2b Re-vendorar no SDK (`npm run sync:protocol`, após #174 mergear) → widenar
-        `VolundAwaitingInputError.kind` + `result()`, **bump minor (`0.3.0`)** + **nota
-        de migração** (switches exaustivos podem precisar de um `case "approval"`).
-- [ ] 3.3 **[backend]** `POST /api/v1/approvals/{id}/decide` (auth API key, reusa
-        `resumeAgentAfterDecision`).
+- [x] 3.2b Re-vendorado no SDK (`sync:protocol`) → `VolundAwaitingInputError.kind` +
+        `result()` widenados, **bump minor `0.3.0`** + **nota de migração** no README.
+- [x] 3.3 **[backend]** `POST /api/v1/approvals/{id}/decide` (auth API key, reusa
+        `resumeAgentAfterDecision`) — **volund-os#175 (MERGED)**.
 - [ ] 3.4 **[backend]** Verificar que o approval gate dispara p/ `source:"api"`.
-- [ ] 3.5 SDK: helper `volund.runs.approve(runId, requestId, decision)` + tratar
-        `kind:"approval"` + testes (TDD).
+- [x] 3.5 SDK: helper **`volund.approvals.approve/reject/decide(approvalId, …)`**
+        (renomeado de `runs.approve` — bate com o endpoint `/approvals/{id}`) + trata
+        `kind:"approval"` + testes. *(Naming superou o rascunho `runs.approve`.)*
 
 ## 4. Reconexão de stream (Item 4 — V2, [backend] + SDK)
 - [ ] 4.1 **[backend]** Implementar replay por `Last-Event-ID` na rota `/stream`.
