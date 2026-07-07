@@ -1,6 +1,6 @@
 {
   "name": "@volund-ia/sdk",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Cliente TypeScript para rodar agentes do Volund OS com streaming em tempo real.",
   "type": "module",
   "main": "./dist/index.cjs",

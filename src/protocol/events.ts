@@ -27,11 +27,12 @@
  *       campos estilo Claude Code. camelCase fica reservado p/ ergonomia futura
  *       na borda da linguagem (mapeado no SDK), não no contrato.
  *  [D2] Status reusa o vocabulário do GET /runs: "completed" | "failed".
- *       Pausa (HITL) = UM evento genérico `awaiting_input { kind }`. Na V1 o
- *       único `kind` é "vault": runs via API rodam com
- *       `--permission-mode bypassPermissions` (lib/agent/v2/run.ts), então NÃO
- *       pausam por aprovação de ferramenta. "approval" foi descopado da V1
- *       (decisão do time, 22/06) — reintroduzir quando/se a API suportar.
+ *       Pausa (HITL) = UM evento genérico `awaiting_input { kind }`. `kind` é
+ *       "vault" | "approval" (esta PR adiciona "approval"). Sobre `bypassPermissions`:
+ *       ele desliga só as prompts NATIVAS do Claude; aprovações configuradas pelo
+ *       owner seguem ativas via PreToolUse hook, então runs via API PODEM pausar por
+ *       aprovação (ver AwaitingInputEvent). Adicionar valor a essa união é ADITIVO no
+ *       wire → SEM bump de SCHEMA_VERSION.
  *  [D3] tool_result.is_error CONFIRMADO real no nível stream-json: vem como
  *       `is_error: true` dentro do tool_result (no evento cru `user`). O
  *       types.ts da Volund não o tipa → o adapter lê do cru via cast. Mantido
@@ -130,20 +131,28 @@ export interface ToolResultEvent {
 }
 
 /**
- * HITL: o run pausou esperando ação humana. Na V1 o único caso é "vault"
- * (preencher uma credencial no cofre) — o servidor emite este evento, SUPRIME o
- * resto do stream e o cliente retoma pelos endpoints existentes. [D2] Modelo
- * genérico (decisão do time, 22/06): `kind` fica como união pra ser extensível.
+ * HITL: o run pausou esperando ação humana. [D2] Modelo genérico: `kind` é união
+ * extensível. O servidor emite este evento, SUPRIME o resto do stream e o cliente
+ * retoma pelos endpoints existentes.
  *
- * "approval" foi descopado da V1: runs via API usam
- * `--permission-mode bypassPermissions` (lib/agent/v2/run.ts), logo não pausam
- * por aprovação de ferramenta. Reintroduzir `kind:"approval"` quando/se a API
- * passar a suportar aprovação (provável na V2).
+ * Casos suportados:
+ *  - "vault"    — preencher uma credencial no cofre.
+ *  - "approval" — decidir uma aprovação de ferramenta (sentinel
+ *                 `__approval_pending__`, status `awaiting_approval`). Embora runs
+ *                 via API usem `--permission-mode bypassPermissions` (desliga as
+ *                 prompts NATIVAS do Claude), aprovações configuradas pelo owner
+ *                 continuam ativas via PreToolUse hook — então podem pausar.
+ *
+ * Adicionar um valor de `kind` é ADITIVO no WIRE (clientes v1 ainda parseiam o evento;
+ * ignoram o que não conhecem) → NÃO exige bump de SCHEMA_VERSION. Obs.: para
+ * consumidores TypeScript, a união mais larga pode quebrar *exhaustive checks* em
+ * compile-time — isso se sinaliza pelo SEMVER do pacote SDK (bump minor + nota de
+ * migração), NÃO por SCHEMA_VERSION (que é o protocolo do wire).
  */
 export interface AwaitingInputEvent {
   type: "awaiting_input";
   request_id: string;
-  kind: "vault";
+  kind: "vault" | "approval";
 }
 
 /** Último evento de um stream que termina normalmente (origem: result). */
